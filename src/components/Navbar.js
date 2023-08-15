@@ -2,7 +2,6 @@ import React, {useState,useEffect} from 'react';
 
 import {AiOutlineClose} from "react-icons/ai"
 import {VscThreeBars} from "react-icons/vsc"
-import logo from "../styles/logo.png"
 const Navbar = () => {
   const [open,setOpen]=useState(false);
   const [sticky,setSticky]=useState(false)
@@ -18,11 +17,11 @@ const Navbar = () => {
     <nav className={`fixed top-0 z-10 ${sticky? "bg-gray-900" : ""} duration-300 ease-in-out w-screen`}>
     {/* LOGO */}
         <a href="/">
-          <img src={logo} className="absolute lg:top-4 xl:left-20 xl:w-60 sm:w-48 w-24 md:left-32 sm:left-24 left-16 md:top-3 sm:top-1 top-2.5 hover:cursor-pointer"
-                         />
+          {/* <img src={logo} className="absolute lg:top-4 xl:left-20 xl:w-60 sm:w-48 w-24 md:left-32 sm:left-24 left-16 md:top-3 sm:top-1 top-2.5 hover:cursor-pointer"
+                         /> */}
         </a>
       {/* DESKTOP NAV */}
-        <div className="xl:grid hidden w-6/12 mx-auto  grid-cols-4 text-center py-8 text-gray-100">
+        <div className="xl:grid hidden w-6/12 mx-auto  grid-cols-4 text-center py-8 text-gray-900">
           <div className={`w-full text-center`}>
             
             <a href="/#home" className="text-center mx-auto w-fit flex flex-col cursor-pointer hover:text-white hover:scale-110 duration-100 ease-in-out">

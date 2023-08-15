@@ -22,10 +22,7 @@ module.exports = {
       // => @media (min-width: 1536px) { ... },
       '3xl': '1800px'
     },
-    fontFamily: {
-      // 'bubble': ['Lilita One', 'cursive'],
 
-    },
     extend: {
       transitionProperty: {
         'border':"border",
