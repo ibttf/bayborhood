@@ -10,16 +10,16 @@ const Home = () => {
 
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  const [lng, setLng] = useState(-122.22);
-  const [lat, setLat] = useState(37.77);
-  const [zoom, setZoom] = useState(8);
+  const [lng, setLng] = useState(-122.4474);
+  const [lat, setLat] = useState(37.7529);
+  const [zoom, setZoom] = useState(12);
 
   
   const [showCountyColors,setShowCountyColors]=useState(false)
-
+  const [showParks,setShowParks]=useState(false);
 
   useEffect(() => {
-    const geoJsonData = require('../data/cities.geojson');
+    const sfBoundaries = require('../data/cities.geojson');
 
     //SETTING INITIAL MAP IN BAY AREA
     map.current = new mapboxgl.Map({
@@ -30,32 +30,12 @@ const Home = () => {
       minZoom: 7,
     });
 
-    //FUNCTION TO UPDATE COLORS
-    const updateFillColor = () => {
-      map.current.setPaintProperty('region-fill', 'fill-color', showCountyColors
-        ? [
-            'match',
-            ['get', 'objectid'],
-            '1', 'lightgreen',
-            '2', 'orange',
-            '3', 'pink',
-            '4', 'blue',
-            '5', 'yellow',
-            '6', 'red',
-            '7', 'purple',
-            '8', 'magenta',
-            '9', 'brown',
-            'lightblue' // Default value if no match
-          ]
-        : 'blue' // static color fill
-      );
-    };
 
     //ADDING REGION FILLS AND OUTLINES
     map.current.on('load', () => {
       map.current.addSource('city', {
         type: 'geojson',
-        data: geoJsonData,
+        data: sfBoundaries,
       });
 
 
@@ -66,23 +46,21 @@ const Home = () => {
         source: 'city',
         paint: {
           'fill-color': 'blue', // Initial static color fill
-          'fill-opacity': 0.7,
+          'fill-opacity': 0.5,
         },
       });
+      
       // ADD OUTLINES
       map.current.addLayer({
         id: 'region-outline',
         type: 'line',
         source: 'city',
         paint: {
-          'line-color': '#ffffff',
-          'line-width': 1,
-          'line-opacity': 0.5,
+          'line-color': 'white',
+          'line-width': 2,
+          'line-opacity': 0.7,
         },
       });
-      //UPDATE FILL COLOR ONCE MAP IS DONE LOADING
-      updateFillColor(); 
-
     });
 
 
@@ -90,13 +68,13 @@ const Home = () => {
 
     //UPDATE ZOOM AND CENTER OF MAP BASED ON DRAG
       map.current.on('move', () => {
-        setZoom(map.current.getZoom().toFixed(2));
+        setZoom(map.current.getZoom().toFixed(4));
       });
 
       map.current.on('drag', () => {
         const center = map.current.getCenter();
-        const newLng = Math.max(-122.5, Math.min(-122, center.lng));
-        const newLat = Math.max(37.5, Math.min(38, center.lat));
+        const newLng = Math.max(-122.5, Math.min(-122.4, center.lng));
+        const newLat = Math.max(37.7, Math.min(37.8, center.lat));
 
         if (center.lng !== newLng || center.lat !== newLat) {
           map.current.setCenter(new mapboxgl.LngLat(newLng, newLat));
@@ -152,14 +130,6 @@ const Home = () => {
             'match',
             ['get', 'objectid'],
             '1', 'lightgreen',
-            '2', 'orange',
-            '3', 'pink',
-            '4', 'blue',
-            '5', 'yellow',
-            '6', 'red',
-            '7', 'purple',
-            '8', 'magenta',
-            '9', 'brown',
             'lightblue' // Default value if no match
           ]
         : 'blue' // static color fill
@@ -185,7 +155,7 @@ const Home = () => {
           <img src={logo}  className="w-20 h-20"/>
           <h1 className="text-left text-4xl font-semibold text-red-700 font-mono">
             <span>
-              Bay
+              San
             </span>
               borhood
           </h1>
