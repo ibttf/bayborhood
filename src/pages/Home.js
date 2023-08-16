@@ -7,81 +7,89 @@ mapboxgl.accessToken = process.env.REACT_APP_TOKEN;
 const Home = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
+
+  const [mapLoaded, setMapLoaded] = useState(false);
+
   const [lng, setLng] = useState(-122.22);
   const [lat, setLat] = useState(37.77);
   const [zoom, setZoom] = useState(8);
 
-  useEffect(() => {
-
-    if (map.current) return; // initialize map only once
-
-        const geoJsonData = require('../data/cities2.geojson');
-        map.current = new mapboxgl.Map({
-          container: mapContainer.current,
-          style: 'mapbox://styles/mapbox/light-v10',
-          center: [lng, lat],
-          zoom: zoom,
-          minZoom: 8,
-        });
-
-        const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false });
-
-
-      map.current.on('load', () => {
-        map.current.addSource('city', {
-          type: 'geojson',
-          data: geoJsonData,
-        });
-
-        map.current.addLayer({
-          id: 'city-layer',
-          type: 'fill',
-          source: 'city',
-          paint: {
-            'fill-color': '#38bdf8',
-            'fill-opacity': 0.8,
-          },
-        });
-
-        
-
-
-      });
-
-      map.current.on('mouseenter', 'city-layer', (e) => {
-        map.current.getCanvas().style.cursor = 'pointer';
-      
-        // Debugging: log the properties object to see its structure
-      
-        const { jurname } = e.features[0].properties;
-        const coordinates = e.features[0].geometry.coordinates;
-      
-        // Find a point within the MultiPolygon to use for the popup
-        const point = coordinates[0][0]; // Use the first point of the first polygon
-        
-        const lngLat = [point[0][0], point[0][1]]; // Reversed order
-        console.log(lngLat)
-        
-        popup
-          .setLngLat(lngLat) // Set the correct LngLat order
-          .setHTML(`<p>${jurname}</p>`)
-          .addTo(map.current);
-        map.current.getCanvas().style.cursor = 'pointer';
-    
-      });
-      
-      map.current.on('mouseleave', 'city-layer', () => {
-        map.current.getCanvas().style.cursor = '';
-        popup.remove();
-      });
   
+  const [showCountyColors,setShowCountyColors]=useState(false)
+
+
+  useEffect(() => {
+    const geoJsonData = require('../data/cities.geojson');
+
+    //SETTING INITIAL MAP IN BAY AREA
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/light-v10',
+      center: [lng, lat],
+      zoom: zoom,
+      minZoom: 7,
+    });
+
+    //FUNCTION TO UPDATE COLORS
+    const updateFillColor = () => {
+      map.current.setPaintProperty('region-fill', 'fill-color', showCountyColors
+        ? [
+            'match',
+            ['get', 'objectid'],
+            '1', 'lightgreen',
+            '2', 'orange',
+            '3', 'pink',
+            '4', 'blue',
+            '5', 'yellow',
+            '6', 'red',
+            '7', 'purple',
+            '8', 'magenta',
+            '9', 'brown',
+            'lightblue' // Default value if no match
+          ]
+        : 'blue' // static color fill
+      );
+    };
+
+    //ADDING REGION FILLS AND OUTLINES
+    map.current.on('load', () => {
+      map.current.addSource('city', {
+        type: 'geojson',
+        data: geoJsonData,
+      });
+
+
+      //ADD REGION FILLS
+      map.current.addLayer({
+        id: 'region-fill',
+        type: 'fill',
+        source: 'city',
+        paint: {
+          'fill-color': 'blue', // Initial static color fill
+          'fill-opacity': 0.7,
+        },
+      });
+      // ADD OUTLINES
+      map.current.addLayer({
+        id: 'region-outline',
+        type: 'line',
+        source: 'city',
+        paint: {
+          'line-color': '#ffffff',
+          'line-width': 1,
+          'line-opacity': 0.5,
+        },
+      });
+      //UPDATE FILL COLOR ONCE MAP IS DONE LOADING
+      updateFillColor(); 
+
+    });
 
 
 
+
+    //UPDATE ZOOM AND CENTER OF MAP BASED ON DRAG
       map.current.on('move', () => {
-        const newLng = map.current.getCenter().lng.toFixed(4);
-        const newLat = map.current.getCenter().lat.toFixed(4);
-
         setZoom(map.current.getZoom().toFixed(2));
       });
 
@@ -94,10 +102,72 @@ const Home = () => {
           map.current.setCenter(new mapboxgl.LngLat(newLng, newLat));
         }
       });
+        // Create a single popup element outside of mouse events
+        const popupDiv = document.createElement('div');
+        popupDiv.style.position = 'absolute';
+        popupDiv.style.backgroundColor = 'white';
+        popupDiv.style.padding = '5px';
+        popupDiv.style.border = '1px solid #ccc';
+        popupDiv.style.borderRadius = '3px';
+        popupDiv.style.pointerEvents = 'none'; // Allow mouse events to pass through
+        popupDiv.style.display = 'none'; // Initially hidden
+        document.body.appendChild(popupDiv);
 
-      
+        map.current.on('mouseenter', 'region-fill', (e) => {
+          const { county } = e.features[0].properties;
+        
+          if (county) {
+            popupDiv.innerHTML = `<p>${county}</p>`;
+            popupDiv.style.display = 'block'; // Show the popup
+          }
+        });
+        
+        map.current.on('mousemove', 'region-fill', (e) => {
+          const { county } = e.features[0].properties;
+        
+          if (county) {
+            popupDiv.innerHTML = `<p>${county}</p>`; // Update the content
+          }
+        
+          // Update the position of the popup
+          const x = e.originalEvent.clientX;
+          const y = e.originalEvent.clientY;
+          popupDiv.style.left = `${x}px`;
+          popupDiv.style.top = `${y}px`;
+          popupDiv.style.transform = 'translate(-50%, -140%)';
+        });
+        
+        map.current.on('mouseleave', 'region-fill', () => {
+          popupDiv.style.display = 'none'; // Hide the popup
+        });
+  
+      setMapLoaded(true);
+  },[]);
 
-  });
+  useEffect(() => {
+    //SECOND USE EFFECT TO UPDATE COLORS WITHOUT RERENDER
+    if (map.current && mapLoaded) {
+      map.current.setPaintProperty('region-fill', 'fill-color', showCountyColors
+        ? [
+            'match',
+            ['get', 'objectid'],
+            '1', 'lightgreen',
+            '2', 'orange',
+            '3', 'pink',
+            '4', 'blue',
+            '5', 'yellow',
+            '6', 'red',
+            '7', 'purple',
+            '8', 'magenta',
+            '9', 'brown',
+            'lightblue' // Default value if no match
+          ]
+        : 'blue' // static color fill
+      );
+    }
+  }, [showCountyColors, mapLoaded]);
+
+
 
   const handleZoomIn = () => {
     map.current.zoomTo(map.current.getZoom() + 1, { duration: 200 });
@@ -135,6 +205,14 @@ const Home = () => {
             -
           </button>
         </div>
+        
+        <div className="absolute bottom-2 right-2 z-10 flex flex-col">
+          <button className="text-md font-semibold text-black rounded-md border-2  bg-white hover:bg-gray-200 duration-200 p-1 w-full" onClick={()=>{setShowCountyColors(!showCountyColors)}}>
+            {showCountyColors ? "Hide County Colors" : "Show County Colors"}
+          </button>
+      
+        </div>
+        
         <div ref={mapContainer} className="absolute top-0" style={{ height: '100%', width:"80%" }} />
       </div>
 
