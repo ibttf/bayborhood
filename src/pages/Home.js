@@ -2,24 +2,92 @@ import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import '../styles/animations.css';
 import logo from "../styles/logo.png"
+import {BsShield, BsTree,BsTrainFront} from "react-icons/bs"
+import {GrLocation} from "react-icons/gr"
+import {AiOutlineShoppingCart} from "react-icons/ai"
+import {PiPersonSimpleBikeBold} from "react-icons/pi"
+import {CiDumbbell} from "react-icons/ci"
+import {LiaBusSolid} from "react-icons/lia"
 mapboxgl.accessToken = process.env.REACT_APP_TOKEN;
 
 const Home = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
+  const parkMarkers = useRef([]); 
 
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  const [lng, setLng] = useState(-122.4474);
-  const [lat, setLat] = useState(37.7529);
-  const [zoom, setZoom] = useState(12);
+  const [lng, setLng] = useState(-122.42);
+  const [lat, setLat] = useState(37.75);
+  const [zoom, setZoom] = useState(11);
 
   
-  const [showCountyColors,setShowCountyColors]=useState(false)
+  const [showQuadrantColors,setShowQuadrantColors]=useState(false)
   const [showParks,setShowParks]=useState(false);
+  const [showCrime,setShowCrime]=useState(false);
+  
+
+  const updateOpacity = () => {
+    if (!map.current) return;
+  
+    // Define the base opacity expression
+    let opacityExpression = ['+', 1];
+  
+    // Add park_score based opacity if showParks is true
+    if (showParks) {
+      opacityExpression = ['-', opacityExpression, ['*', ['get', 'park_score'], 0.1]];
+    }
+  
+    // Add crime_score based opacity if showCrime is true
+    if (showCrime) {
+      opacityExpression = ['-', opacityExpression, ['*', ['get', 'crime_score'], 0.1]];
+    }
+  
+    // Ensure opacity doesn't exceed 1
+    opacityExpression = ['min', 1, opacityExpression];
+  
+    // Set the calculated opacity expression to the 'quadrant-fill' layer
+    map.current.setPaintProperty('quadrant-fill', 'fill-opacity', opacityExpression);
+  };
+
+
+
+  //FUNCTION TO SHOW PARKS
+  // Function to toggle park markers
+  //   const toggleParkMarkers = (show) => {
+  //     if (show) {
+  //       fetch('/static/media/parks.157b43c98b996f8882ca.geojson')
+  //       .then((r) => r.json())
+  //       .then((data) => {
+  //         data.features.forEach((feature) => {
+  //           // Create markers using feature properties
+  //           const popup = new mapboxgl.Popup({ offset: 25 }).setText(
+  //             feature.properties.Map_Label
+  //           );
+  //           const { coordinates } = feature.geometry;
+  //           const marker = new mapboxgl.Marker({
+  //             color: '#57fa7d',
+  //             scale: 0.6,
+  //           })
+  //             .setLngLat(coordinates)
+  //             .setPopup(popup)
+  //             .addTo(map.current);
+  
+  //           // Add the created marker to the parkMarkers array
+  //           parkMarkers.current.push(marker);
+  //         });
+  //       });
+  //   } else {
+  //     // Remove existing markers if show is false
+  //     parkMarkers.current.forEach((marker) => marker.remove());
+  //     parkMarkers.current = [];
+  //   }
+  // };
+
+
 
   useEffect(() => {
-    const sfBoundaries = require('../data/cities.geojson');
+    const neighborhoods=require('../data/neighborhoods.geojson');
 
     //SETTING INITIAL MAP IN BAY AREA
     map.current = new mapboxgl.Map({
@@ -27,115 +95,188 @@ const Home = () => {
       style: 'mapbox://styles/mapbox/light-v10',
       center: [lng, lat],
       zoom: zoom,
-      minZoom: 7,
+      minZoom: 10,
     });
-
 
     //ADDING REGION FILLS AND OUTLINES
+
+
     map.current.on('load', () => {
-      map.current.addSource('city', {
+      // Adding neighborhoods source (includes quadrants info)
+      map.current.addSource('neighborhoods', {
         type: 'geojson',
-        data: sfBoundaries,
+        data: neighborhoods,
       });
 
-
-      //ADD REGION FILLS
+      // Neighborhood fill layer
       map.current.addLayer({
-        id: 'region-fill',
+        id: 'neighborhood-fill',
         type: 'fill',
-        source: 'city',
+        source: 'neighborhoods',
         paint: {
-          'fill-color': 'blue', // Initial static color fill
-          'fill-opacity': 0.5,
+          'fill-color': 'transparent',
+          'fill-opacity': 0.6,
         },
       });
-      
-      // ADD OUTLINES
+
+      // Neighborhood outline layer
       map.current.addLayer({
-        id: 'region-outline',
+        id: 'neighborhood-outline',
         type: 'line',
-        source: 'city',
+        source: 'neighborhoods',
         paint: {
           'line-color': 'white',
-          'line-width': 2,
-          'line-opacity': 0.7,
+          'line-width': 1,
+          'line-opacity': 0.5,
         },
       });
+
+      // Quadrant fill layer (using same neighborhoods source)
+      map.current.addLayer({
+        id: 'quadrant-fill',
+        type: 'fill',
+        source: 'neighborhoods',
+        paint: {
+          'fill-color': 'blue',
+          'fill-opacity': 0.6,
+        },
+      });
+
+      // Quadrant outline layer (using same neighborhoods source)
+      map.current.addLayer({
+        id: 'quadrant-outline',
+        type: 'line',
+        source: 'neighborhoods',
+        paint: {
+          'line-color': '#ffffff',
+          'line-width': 1,
+          'line-opacity': 0.5,
+        },
+      });
+
+
+    // POPUP BASED ON NEIGHBORHOOD/QUADRANT
+      const popupDiv = document.createElement('div');
+      popupDiv.style.position = 'absolute';
+      popupDiv.style.backgroundColor = '#334155';
+      popupDiv.style.color="white";
+      popupDiv.style.padding = '10px';
+      popupDiv.style.borderRadius = '1px';
+      popupDiv.style.pointerEvents = 'none'; // Allow mouse events to pass through
+      popupDiv.style.display = 'none'; // Initially hidden
+      const h3Elements = popupDiv.querySelectorAll('h3');
+      h3Elements.forEach((element) => {
+        element.style.color = 'red';
+      });
+      document.body.appendChild(popupDiv);
+
+      map.current.on('mouseenter', ['neighborhood-fill','quadrant-fill'], (e) => {
+
+        if (e.features.length>1){
+          const { name } = e.features[0].properties;
+          const { quad } = e.features[1].properties;
+  
+  
+          if (name && quad) {
+            popupDiv.innerHTML = `
+              
+            <div>
+            <h3 style="color:white; text-align:center; font-size:15px;">${quad}</h3>
+            <p style="color: white; font-size: 13px;">${name}</p>
+          </div>
+            `;
+            popupDiv.style.display = 'block'; // Show the popup
+          }
+        }
+
+      });
+
+      map.current.on('mousemove', ['neighborhood-fill','quadrant-fill'], (e) => {
+        if (e.features.length>1){
+          const { name } = e.features[0].properties;
+          const { quad } = e.features[1].properties;
+  
+          
+  
+          if (name && quad) {
+            popupDiv.innerHTML = `
+              
+            <div>
+            <h3 style="color:white; text-align:center; font-size:15px;">${quad}</h3>
+            <p style="color: white; font-size: 13px;">${name}</p>
+          </div>
+            `;
+            popupDiv.style.display = 'block'; // Show the popup
+          }
+        }
+        // Update the position of the popup
+        const x = e.originalEvent.clientX;
+        const y = e.originalEvent.clientY;
+        popupDiv.style.left = `${x}px`;
+        popupDiv.style.top = `${y}px`;
+        popupDiv.style.transform = 'translate(-50%, -140%)';
+      });
+
+      map.current.on('mouseleave', ['neighborhood-fill','quadrant-fill'], () => {
+        popupDiv.style.display = 'none'; // Hide the popup
+      });
+
+
+
     });
+
+
+
 
 
 
 
     //UPDATE ZOOM AND CENTER OF MAP BASED ON DRAG
       map.current.on('move', () => {
-        setZoom(map.current.getZoom().toFixed(4));
+        setZoom(map.current.getZoom().toFixed(2));
       });
 
       map.current.on('drag', () => {
         const center = map.current.getCenter();
-        const newLng = Math.max(-122.5, Math.min(-122.4, center.lng));
-        const newLat = Math.max(37.7, Math.min(37.8, center.lat));
+        const newLng = Math.max(-122.43, Math.min(-122.41, center.lng));
+        const newLat = Math.max(37.65, Math.min(37.85, center.lat));
 
         if (center.lng !== newLng || center.lat !== newLat) {
           map.current.setCenter(new mapboxgl.LngLat(newLng, newLat));
         }
       });
-        // Create a single popup element outside of mouse events
-        const popupDiv = document.createElement('div');
-        popupDiv.style.position = 'absolute';
-        popupDiv.style.backgroundColor = 'white';
-        popupDiv.style.padding = '5px';
-        popupDiv.style.border = '1px solid #ccc';
-        popupDiv.style.borderRadius = '3px';
-        popupDiv.style.pointerEvents = 'none'; // Allow mouse events to pass through
-        popupDiv.style.display = 'none'; // Initially hidden
-        document.body.appendChild(popupDiv);
 
-        map.current.on('mouseenter', 'region-fill', (e) => {
-          const { county } = e.features[0].properties;
         
-          if (county) {
-            popupDiv.innerHTML = `<p>${county}</p>`;
-            popupDiv.style.display = 'block'; // Show the popup
-          }
-        });
-        
-        map.current.on('mousemove', 'region-fill', (e) => {
-          const { county } = e.features[0].properties;
-        
-          if (county) {
-            popupDiv.innerHTML = `<p>${county}</p>`; // Update the content
-          }
-        
-          // Update the position of the popup
-          const x = e.originalEvent.clientX;
-          const y = e.originalEvent.clientY;
-          popupDiv.style.left = `${x}px`;
-          popupDiv.style.top = `${y}px`;
-          popupDiv.style.transform = 'translate(-50%, -140%)';
-        });
-        
-        map.current.on('mouseleave', 'region-fill', () => {
-          popupDiv.style.display = 'none'; // Hide the popup
-        });
-  
       setMapLoaded(true);
   },[]);
 
   useEffect(() => {
     //SECOND USE EFFECT TO UPDATE COLORS WITHOUT RERENDER
     if (map.current && mapLoaded) {
-      map.current.setPaintProperty('region-fill', 'fill-color', showCountyColors
+      // toggleParkMarkers(showParks);
+      
+
+      updateOpacity(showParks, showCrime);
+  
+
+      
+      map.current.setPaintProperty('quadrant-fill', 'fill-color', showQuadrantColors
         ? [
             'match',
-            ['get', 'objectid'],
-            '1', 'lightgreen',
-            'lightblue' // Default value if no match
+            ['get', 'quad'],
+            'SE', 'lightgreen',
+            'SW', 'orange',
+            'NE', 'blue',
+            'NW', 'red',
+            'blue' // Default value if no match
           ]
         : 'blue' // static color fill
       );
+
     }
-  }, [showCountyColors, mapLoaded]);
+  }, [showQuadrantColors, showParks, showCrime, map.current]);
+
+
 
 
 
@@ -155,7 +296,7 @@ const Home = () => {
           <img src={logo}  className="w-20 h-20"/>
           <h1 className="text-left text-4xl font-semibold text-red-700 font-mono">
             <span>
-              San
+              Bay
             </span>
               borhood
           </h1>
@@ -165,6 +306,55 @@ const Home = () => {
                   font-serif"
                   style={{fontSize:"12px"}}>i</p>
         </div>
+        <div className="flex flex-col py-4 px-3">
+          <h1 className="text-2xl text-gray-900 font-semibold">Add More Filters</h1>
+          <h3 className="text-lg text-gray-600">Continue refining your ideal neighborhoods</h3>
+          <div className="flex flex-col border-b-4 border-black">
+            <div className="flex my-2">
+              <div className="whitespace-nowrap py-2 px-3 border-2 border-gray-300 rounded-lg flex items-center cursor-pointer hover:bg-gray-100 duration-200 mr-2">
+                <GrLocation className="w-4 h-4 mx-1"/>Proximity to Location
+              </div>
+              <div onClick={()=>setShowCrime(!showCrime)}
+              className="whitespace-nowrap py-2 px-3 border-2 border-gray-300 rounded-lg flex items-center cursor-pointer hover:bg-gray-100 duration-200">
+                <BsShield className="w-4 h-4 mx-1"/>Safety
+              </div>
+            </div>
+            <div className="flex mb-2">
+              <div onClick={()=>setShowParks(!showParks)}
+                    className="whitespace-nowrap py-2 px-3 border-2 border-gray-300 rounded-lg flex items-center cursor-pointer hover:bg-gray-100 duration-200 mr-2">
+                <BsTree className="w-4 h-4 mx-1"/>Parks and Rec Centers
+              </div>
+              <div className="whitespace-nowrap py-2 px-3 border-2 border-gray-300 rounded-lg flex items-center cursor-pointer hover:bg-gray-100 duration-200">
+                <AiOutlineShoppingCart className="w-4 h-4 mx-1"/>Grocery chains
+              </div>
+            </div>
+            <div className="flex mb-2">
+              <div className="whitespace-nowrap py-2 px-3 border-2 border-gray-300 rounded-lg flex items-center cursor-pointer hover:bg-gray-100 duration-200 mr-2">
+                <BsTrainFront className="w-4 h-4 mx-1"/>BART Stations
+              </div>
+              <div className="whitespace-nowrap py-2 px-3 border-2 border-gray-300 rounded-lg flex items-center cursor-pointer hover:bg-gray-100 duration-200">
+                <PiPersonSimpleBikeBold className="w-4 h-4 mx-1"/>Bikes
+              </div>
+            </div>
+            <div className="flex mb-2">
+              <div className="whitespace-nowrap py-2 px-3 border-2 border-gray-200 rounded-lg flex items-center cursor-pointer hover:bg-gray-100 duration-200 mr-2">
+                <CiDumbbell className="w-6 h-6 mx-1"/>Gym chains
+              </div>
+              <div className="whitespace-nowrap py-2 px-3 border-2 border-gray-200 rounded-lg flex items-center cursor-pointer hover:bg-gray-100 duration-200">
+                <LiaBusSolid className="w-6 h-6 mx-1"/>Bus stops
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col">
+            <h1 className='text-2xl text-gray-900 font-semibold'>
+              Filters
+            </h1>
+            <h2>
+
+            </h2>
+          </div>
+        </div>
+        
       </div>
       <div className="w-full">
         <div className="absolute top-2 right-2 z-10 flex flex-col">
@@ -176,9 +366,9 @@ const Home = () => {
           </button>
         </div>
         
-        <div className="absolute bottom-2 right-2 z-10 flex flex-col">
-          <button className="text-md font-semibold text-black rounded-md border-2  bg-white hover:bg-gray-200 duration-200 p-1 w-full" onClick={()=>{setShowCountyColors(!showCountyColors)}}>
-            {showCountyColors ? "Hide County Colors" : "Show County Colors"}
+        <div className="absolute bottom-8 right-2 z-10 flex flex-col">
+          <button className="text-md font-semibold text-black rounded-md border-2  bg-white hover:bg-gray-200 duration-200 p-1 w-full" onClick={()=>{setShowQuadrantColors(!showQuadrantColors)}}>
+            {showQuadrantColors ? "Hide Quadrant Colors" : "Show Quadrant Colors"}
           </button>
       
         </div>
