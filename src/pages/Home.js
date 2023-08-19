@@ -108,14 +108,13 @@ const Home = () => {
         data: neighborhoods,
       });
 
-      // Neighborhood fill layer
+      // Neighborhood fill layer NECESSARY FOR MOUSEMOVE
       map.current.addLayer({
         id: 'neighborhood-fill',
         type: 'fill',
         source: 'neighborhoods',
         paint: {
-          'fill-color': 'transparent',
-          'fill-opacity': 0.6,
+          'fill-color': 'transparent'
         },
       });
 
@@ -138,7 +137,7 @@ const Home = () => {
         source: 'neighborhoods',
         paint: {
           'fill-color': 'blue',
-          'fill-opacity': 0.6,
+          'fill-opacity': 0.8,
         },
       });
 
