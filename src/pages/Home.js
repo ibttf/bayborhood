@@ -7,7 +7,6 @@ import {GrLocation} from "react-icons/gr"
 import {AiOutlineShoppingCart} from "react-icons/ai"
 import {PiPersonSimpleBikeBold} from "react-icons/pi"
 import {CiDumbbell} from "react-icons/ci"
-import {LiaBusSolid} from "react-icons/lia"
 import {SearchBox} from '@mapbox/search-js-react';
 
 
@@ -39,9 +38,9 @@ const Home = () => {
     const [safeway,setSafeway]=useState(false);
 
   const [showBart,setShowBart]=useState(false);
+    const [bartMode,setBartMode]=useState("Walking")
   const [showBikes,setShowBikes]=useState(false);
   const [showGyms,setShowGyms]=useState(false);
-  const [showBuses,setShowBuses]=useState(false);
 
 
   const updateOpacity = () => {
@@ -377,10 +376,7 @@ const Home = () => {
                 className={`w-fit whitespace-nowrap py-2 px-3 border-2 border-gray-300 ${showGyms ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200 mr-2`}>
                 <CiDumbbell className="w-4 h-4 mx-1"/>Gym Chains
               </div>
-              <div onClick={()=>setShowBuses(true)}
-              className={`w-fit whitespace-nowrap py-2 px-3 border-2 border-gray-300 ${showBuses ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
-                <LiaBusSolid className="w-4 h-4 mx-1"/>Bus Stops
-              </div>
+
             </div>
           </div>
           <div className="flex flex-col">
@@ -495,8 +491,26 @@ const Home = () => {
         {
           showBart ?
             <div onClick={()=>setShowBart(false)}
-              className={`w-full whitespace-nowrap  rounded-lg flex items-center duration-200 mr-2 cursor-pointer`}>
-                <BsTrainFront className="w-4 h-4 mx-1"/>BART Stations
+              className={`w-full whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
+               
+               <div className="flex items-center">
+               <BsTrainFront className="w-4 h-4 mx-1"/>BART Stations
+                </div>
+                <h4 className="text-sm text-gray-600">
+                  Walking or transit?
+                </h4>
+               <div className="grid grid-cols-3 gap-2">
+                  <div onClick={(e)=>{e.stopPropagation()
+                                      setBartMode("Walking")}} 
+                      className={`${bartMode=="Walking" ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg px-2 py-1 cursor-pointer`}>
+                    Walking
+                  </div>
+                  <div onClick={(e)=>{e.stopPropagation()
+                                      setBartMode("Transit")}} 
+                      className={`${bartMode=="Transit" ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg px-2 py-1 cursor-pointer`}>
+                    Transit
+                  </div>
+                </div>
             </div>
           :
             <></>
@@ -507,7 +521,7 @@ const Home = () => {
               className={`w-full whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
                
                <div className="flex items-center">
-                <AiOutlineShoppingCart className="w-4 h-4 mx-1"/>Grocery Chains
+               <CiDumbbell className="w-4 h-4 mx-1"/>Gym Chains
                 </div>
                <div className="grid grid-cols-3 gap-2">
                   <div onClick={(e)=>{e.stopPropagation()
@@ -526,15 +540,6 @@ const Home = () => {
                     Safeway 
                   </div>
                 </div>
-            </div>
-          :
-            <></>
-        }
-        {
-          showBuses ?
-            <div onClick={()=>setShowBuses(false)}
-              className={`w-full whitespace-nowrap  rounded-lg flex items-center duration-200 mr-2 cursor-pointer`}>
-                <LiaBusSolid className="w-4 h-4 mx-1"/>Bus Stops
             </div>
           :
             <></>
