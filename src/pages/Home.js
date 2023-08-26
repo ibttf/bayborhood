@@ -3,7 +3,6 @@ import mapboxgl from 'mapbox-gl';
 import '../styles/animations.css';
 import logo from "../styles/logo.png"
 import {BsShield, BsTree,BsTrainFront} from "react-icons/bs"
-import {GrLocation} from "react-icons/gr"
 import {AiOutlineShoppingCart} from "react-icons/ai"
 import {PiPersonSimpleBikeBold} from "react-icons/pi"
 import {CiDumbbell} from "react-icons/ci"
@@ -15,7 +14,6 @@ mapboxgl.accessToken = process.env.REACT_APP_TOKEN;
 const Home = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const locationMarker=useRef(null);
   const wholeFoodsMarkersRef = useRef([]); // ref to store Whole Foods markers
   const traderJoesMarkersRef = useRef([]); // ref to store Trader Joe's markers
   const gymMarkersRef = useRef([]); // ref to store Gym markers
@@ -163,7 +161,13 @@ const Home = () => {
     if (showGyms) {
       opacityExpression = ['-', opacityExpression, ['*', ['get', 'gym_score'], 0.1]];
     }
-
+    if (showBart) {
+      if (bartMode=="Walking"){
+        opacityExpression = ['-', opacityExpression, ['*', ['get', 'walking_bart_score'], 0.1]];
+      }else{
+        opacityExpression = ['-', opacityExpression, ['*', ['get', 'driving_bart_score'], 0.1]];
+      }
+    }
 
   
     // Ensure opacity doesn't exceed 1
@@ -359,22 +363,11 @@ const Home = () => {
       : 'rgba(0,51,204,0.7)' // static color fill with 0.7 opacity
     );
 
-      if (locationLatLong) {
-        // Remove existing marker if any
-        if (locationMarker.current) {
-          locationMarker.current.remove();
-        }
-      
-        // Create a new marker at the location
-        locationMarker.current = new mapboxgl.Marker()
-          .setLngLat(locationLatLong)
-          .addTo(map.current);
-      }
       }
 
       
 
-  }, [showQuadrantColors, showParks, showCrime, showBikes, locationLatLong, wholeFoods, traderJoes, showGyms, map.current]);
+  }, [showQuadrantColors, showParks, showCrime, showBikes, locationLatLong, wholeFoods, traderJoes, showGyms, showBart, bartMode, map.current]);
 
 
 
@@ -392,10 +385,10 @@ const Home = () => {
   return (
     <>
     <div className={`${showInfo ? " opacity-50" : "opactiy-100"}  bg-white flex h-screen w-screen overflow-hidden`} onClick={()=>setShowInfo(false)}>
-      <div className="w-1/4 h-screen">
-        <div style={{width:"100%"}} className="bg-blue-100 border-b-8 border-blue-900 p-3 flex items-center justify-center">
-          <img src={logo}  className="w-20 h-20"/>
-          <h1 className="text-left text-4xl font-semibold text-red-700 font-mono">
+      <div className="md:w-1/4 w-1/3 h-screen">
+        <div style={{width:"100%"}} className="bg-blue-100 xl:border-b-8 border-b-4 border-blue-900 xl:p-3 p-1 flex items-center justify-center">
+          <img src={logo}  className="xl:w-20 xl:h-20 w-12 h-12"/>
+          <h1 className="text-left xl:text-4xl lg:text-2xl text-xl font-semibold text-red-700 font-mono">
             <span>
               Bay
             </span>
@@ -413,54 +406,47 @@ const Home = () => {
         <div>
 
         </div>
-        <div className="flex flex-col py-4 px-3">
-          <h1 className="text-2xl text-gray-900 font-semibold">Add More Filters</h1>
-          <h3 className="text-lg text-gray-600">Continue refining your ideal neighborhoods</h3>
+        <div className="flex flex-col xl:py-4 xl:px-3 py-2 px-1">
+          <h1 className="xl:text-2xl lg:text-lg text-sm text-gray-900 font-semibold">Add More Filters</h1>
+          <h3 className="xl:text-lg text-xs text-gray-600">Continue refining your ideal neighborhoods</h3>
           <div className="flex flex-col border-b-4 border-blue-900">
-            <div className="flex my-2">
-              <div onClick={()=>setShowLocation(true)}
-                className={`w-fit whitespace-nowrap py-2 px-3 border-2 border-gray-300 ${showLocation ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200 mr-2`}>
-                <GrLocation className="w-4 h-4 mx-1"/>Proximity to Location
-              </div>
+            <div className="md:grid-cols-3 md:grid-rows-1 grid-row-3 lg:gap-2 gap-2 lg:my-2 my-1">
               <div onClick={()=>setShowCrime(true)}
-              className={`w-fit whitespace-nowrap py-2 px-3 border-2 border-gray-300 ${showCrime ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
-                <BsShield className="w-4 h-4 mx-1"/>Safety
+              className={`w-fit whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-0.5 border-2 xl:text-md text-xs border-gray-300 mr-2 ${showCrime ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
+                <BsShield className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>Safety
               </div>
-            </div>
-            <div className="flex mb-2">
+              <div onClick={()=>setShowGyms(true)}
+                className={` w-fit whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-0.5 border-2 xl:text-md text-xs border-gray-300 ${showGyms ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200 mr-2`}>
+                <CiDumbbell className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>Gyms
+              </div>
               <div onClick={()=>setShowParks(true)}
-                className={`w-fit whitespace-nowrap py-2 px-3 border-2 border-gray-300 ${showParks ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200 mr-2`}>
-                <BsTree className="w-4 h-4 mx-1"/>Parks and Rec Centers
-              </div>
-              <div onClick={()=>setShowGrocery(true)}
-              className={`w-fit whitespace-nowrap py-2 px-3 border-2 border-gray-300 ${showGrocery ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
-                <AiOutlineShoppingCart className="w-4 h-4 mx-1"/>Grocery Chains
+                className={` w-fit whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-0.5 border-2 xl:text-md text-xs border-gray-300 ${showParks ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
+                <BsTree className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>Parks
               </div>
             </div>
-            <div className="flex mb-2">
+          
+              <div className="xl:flex-row flex-col flex ">
+              <div onClick={()=>setShowGrocery(true)}
+              className={`xl:my-0 lg:mb-2 mb-1 mr-2 w-fit whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-0.5 border-2 xl:text-md text-xs border-gray-300 ${showGrocery ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
+                <AiOutlineShoppingCart className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>Grocery Chains
+              </div>
               <div onClick={()=>setShowBart(true)}
-                className={`w-fit whitespace-nowrap py-2 px-3 border-2 border-gray-300 ${showBart ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200 mr-2`}>
-                <BsTrainFront className="w-4 h-4 mx-1"/>BART Stations
+                className={`lg:mb-2 mb-1 w-fit whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-0.5 border-2 xl:text-md text-xs border-gray-300 ${showBart ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200 mr-2`}>
+                <BsTrainFront className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>BART Stations
+              </div>
               </div>
               <div onClick={()=>setShowBikes(true)}
-              className={`w-fit whitespace-nowrap py-2 px-3 border-2 border-gray-300 ${showBikes ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
-                <PiPersonSimpleBikeBold className="w-4 h-4 mx-1"/>BikeShare
-              </div>
-            </div>
-            <div className="flex mb-2">
-              <div onClick={()=>setShowGyms(true)}
-                className={`w-fit whitespace-nowrap py-2 px-3 border-2 border-gray-300 ${showGyms ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200 mr-2`}>
-                <CiDumbbell className="w-4 h-4 mx-1"/>Gym Chains
+              className={`lg:mb-2 mb-1 w-fit whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-0.5 border-2 xl:text-md text-xs border-gray-300 ${showBikes ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
+                <PiPersonSimpleBikeBold className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>BikeShare
               </div>
 
-            </div>
           </div>
           <div className="flex flex-col">
-            <h1 className='text-2xl text-gray-900 font-semibold'>
+            <h1 className='xl:text-2xl lg:text-lg text-sm text-gray-900 font-semibold'>
               Filters
             </h1>
-            <h2 className="text-gray-600">
-              Hold and drag here to delete
+            <h2 className="xl:text-md text-xs text-gray-600">
+              Click to delete
             </h2>
             <div>
               {displayActiveFilters()}
@@ -492,28 +478,27 @@ const Home = () => {
     </div>
     {
       showInfo ? 
-      <div className="absolute opacity-100 h-full w-full top-0 left-0 right-0 mx-auto my-36" style={{width:"80vw"}}>
-          <div class="text-sm bg-white pb-16 px-8 rounded-sm">
-            <h1 className="text-3xl font-semibold text-center py-6">
+      <div className="absolute opacity-100 h-full w-full top-0 left-0 right-0 mx-auto xl:py-48 py-6" style={{width:"80vw"}}>
+          <div class="lg:text-sm text-xs bg-white pb-16 px-8 rounded-md">
+            <h1 className="lg:text-3xl text-xl font-semibold text-center py-6">
               About
             </h1>
-            <div class="text-lg mb-1">
+            <div class="lg:text-lg text-sm mb-1">
               <b>How does Bayborhood work?</b>
             </div>
             Bayborhood helps you discover suitable neighborhoods in San Francisco, based on your preferences.
             <ul class="list-decimal ml-6">
               <li class="mt-1">
-                <b>Adding Filters</b>: From the left sidebar, add filters to narrow down your search. You can also click on some filters to fine-tune your preferences.</li>
+                <b >Adding Filters</b>: From the left sidebar, add filters to narrow down your search. You can also click on some filters to fine-tune your preferences.</li>
                 <li class="mt-1"><b>View Map</b>: The map is interactive and will update as you add filters. Darker areas indicate higher alignment with your preferences. You can hover over a neighborhood to see its name and the quadrant it's in.</li>
                 <li class="mt-1"><b>See Quadrants</b>: On the bottom right, toggle "See Quadrants" to color-coordinate the map to color every neighborhood separately by their quadrant.</li>
               </ul>
-              <div class="text-lg mt-4 mb-1"><b>Where do you get the data?</b>
+              <div class="lg:text-lg text-sm mb-1 mt-4 mb-1"><b>Where do you get the data?</b>
               </div>We source our data from several public datasets, and apply additional processing to aggregate the disparate datasets into a convenient and accessible format.
               <ul class="ml-6 list-disc">
                 <li class="mt-1"><b>Neighborhoods and Quadrants</b>: 2022 Neighborhood Analysis  <a href="https://data.sfgov.org/" target="_blank" rel="noreferrer" class="text-blue-500 underline">DataSF</a></li>
-                <li class="mt-1"><b>Proximity to Specific Locations</b>: <a href="https://docs.microsoft.com/en-us/bingmaps/rest-services/routes/calculate-an-isochrone" target="_blank" rel="noreferrer" class="text-blue-500 underline">Bing Maps Isochrone API</a> (includes transit data)</li>
-                <li class="mt-1"><b>Grocery Chains and Gyms</b>: <a href="https://developer.foursquare.com/docs/places-api-overview" target="_blank" rel="noreferrer" class="text-blue-500 underline">Foursquare Places API</a></li>
-                <li class="mt-1"><b>Parks and Rec Centers</b>: <a href="https://data.sfgov.org/" target="_blank" rel="noreferrer" class="text-blue-500 underline">Data SF</a></li>
+              <li class="mt-1"><b>Grocery Chains and Gyms</b>: <a href="https://developer.foursquare.com/docs/places-api-overview" target="_blank" rel="noreferrer" class="text-blue-500 underline">Foursquare Places API</a></li>
+                <li class="mt-1"><b>Parks</b>: <a href="https://data.sfgov.org/" target="_blank" rel="noreferrer" class="text-blue-500 underline">Data SF</a></li>
                 <li class="mt-1"><b>BikeShare</b>: <a href="" target="_blank" rel="noreferrer" class="text-blue-500 underline">Lyft API</a></li>
                 <li class="mt-1"><b>BART Stations</b>: <a href="https://www.bart.gov/schedules/developers/api" target="_blank" rel="noreferrer" class="text-blue-500 underline">BART API</a></li>
                 <li class="mt-1"><b>Safety</b>: <a href="" target="_blank" rel="noreferrer" class="text-blue-500 underline">Data SF</a></li>
@@ -530,33 +515,12 @@ const Home = () => {
 
   function displayActiveFilters(){
     return (
-    <div className="flex flex-col border-b-4 border-blue-900">
-        {
-          showLocation ?
-            <div onClick={()=>setShowLocation(false)}
-              className={`w-full whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
-               
-               <div className="flex items-center">
-               <GrLocation className="w-4 h-4 mx-1"/>Proximity to Location
-                </div>
-               <div  onClick={(e)=>e.stopPropagation()} className="">
-                  <SearchBox accessToken={process.env.REACT_APP_TOKEN} 
-                            placeholder="Search"
-                            value={locationName.length>0 ? locationName : ""}
-                            bbox={[-122.537384,37.702566,-122.353363,37.810055]}
-                            onRetrieve={(e)=>{
-                                      setLocationName(e.features[0].properties.name)
-                                      setLocationLatLong(e.features[0].geometry.coordinates)}}
-                            className=""/>
-                </div>
-            </div>
-          :
-            <></>
-        }
+    <div className="flex flex-col">
         {
           showCrime ?
             <div onClick={()=>setShowCrime(false)}
-              className={`w-full whitespace-nowrap  rounded-lg flex items-center duration-200 mr-2 cursor-pointer`}>
+              className={`xl:text-md text-sm xl:border-l-8 border-l-4 xl:my-2 my-0.5 border-yellow-400 bg-gray-100 hover:bg-gray-200 w-full xl:py-2 lg:py-1 py-0.25 xl:px-4 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex items-center duration-200 mr-2 cursor-pointer`}>
+              
               <BsShield className="w-4 h-4 mx-1"/>Safety
             </div>
           :
@@ -565,8 +529,8 @@ const Home = () => {
         {
           showParks ?
             <div onClick={()=>setShowParks(false)}
-              className={`w-full whitespace-nowrap  rounded-lg flex items-center duration-200 mr-2 cursor-pointer`}>
-              <BsTree className="w-4 h-4 mx-1"/>Parks and Rec Centers
+              className={`xl:text-md text-sm xl:border-l-8 border-l-4 xl:my-2 my-0.5 border-red-400 bg-gray-100 hover:bg-gray-200 w-full xl:py-2 lg:py-1 py-0.25 xl:px-4 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex items-center duration-200 mr-2 cursor-pointer`}>
+              <BsTree className="w-4 h-4 mx-1"/>Parks
             </div>
           :
             <></>
@@ -577,7 +541,7 @@ const Home = () => {
                 setShowGrocery(false);
                 setWholeFoods(false)
                 setTraderJoes(false)}}
-              className={`w-full whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
+              className={`xl:text-md text-sm xl:border-l-8 border-l-4 xl:my-2 my-0.5 border-green-400 bg-gray-100 hover:bg-gray-200 w-full xl:py-2 lg:py-1 py-0.25 xl:px-4 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
                
                <div className="flex items-center">
                 <AiOutlineShoppingCart className="w-4 h-4 mx-1"/>Grocery Chains
@@ -585,13 +549,13 @@ const Home = () => {
                <div className="grid grid-cols-2 gap-2">
                   <div onClick={(e)=>{e.stopPropagation()
                                       setTraderJoes(!traderJoes)}} 
-                      className={`${traderJoes ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg px-2 py-1 cursor-pointer`}>
+                      className={`${traderJoes ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 lg:py-1 py-0.25 cursor-pointer xl:text-md`} style={{fontSize: "8px"}}>
                     Trader Joe's
                   </div>
                   <div onClick={(e)=>{e.stopPropagation()
                                       e.preventDefault()
                                       setWholeFoods(!wholeFoods)}} 
-                      className={`${wholeFoods ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg px-2 py-1 cursor-pointer`}>
+                      className={`${wholeFoods ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 lg:py-1 py-0.25 cursor-pointer xl:text-md`} style={{fontSize: "10px"}}>
                     Whole Foods
                   </div>
                 </div>
@@ -602,23 +566,20 @@ const Home = () => {
         {
           showBart ?
             <div onClick={()=>setShowBart(false)}
-              className={`w-full whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
+              className={`xl:text-md text-sm xl:border-l-8 border-l-4 xl:my-2 my-0.5 border-blue-400 bg-gray-100 hover:bg-gray-200 w-full xl:py-2 lg:py-1 py-0.25 xl:px-4 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
                
                <div className="flex items-center">
                <BsTrainFront className="w-4 h-4 mx-1"/>BART Stations
                 </div>
-                <h4 className="text-sm text-gray-600">
-                  Walking or transit?
-                </h4>
                <div className="grid grid-cols-3 gap-2">
                   <div onClick={(e)=>{e.stopPropagation()
                                       setBartMode("Walking")}} 
-                      className={`${bartMode=="Walking" ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg px-2 py-1 cursor-pointer`}>
+                      className={`${bartMode=="Walking" ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 lg:py-1 py-0.25 cursor-pointer xl:text-md`} style={{fontSize: "10px"}}>
                     Walking
                   </div>
                   <div onClick={(e)=>{e.stopPropagation()
                                       setBartMode("Transit")}} 
-                      className={`${bartMode=="Transit" ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg px-2 py-1 cursor-pointer`}>
+                                      className={`${bartMode=="Transit" ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 lg:py-1 py-0.25 cursor-pointer xl:text-md`} style={{fontSize: "10px"}}>
                     Transit
                   </div>
                 </div>
@@ -629,10 +590,10 @@ const Home = () => {
         {
           showGyms ?
             <div onClick={()=>setShowGyms(false)}
-              className={`w-full whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
+              className={`xl:text-md text-sm xl:border-l-8 border-l-4 xl:my-2 my-0.5 border-purple-400 bg-gray-100 hover:bg-gray-200 w-full xl:py-2 lg:py-1 py-0.25 xl:px-4 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
                
                <div className="flex items-center">
-               <CiDumbbell className="w-4 h-4 mx-1"/>Gym Chains
+               <CiDumbbell className="w-4 h-4 mx-1"/>Gyms
                 </div>
             </div>
           :
@@ -641,7 +602,7 @@ const Home = () => {
         {
           showBikes ?
             <div onClick={()=>setShowBikes(false)}
-              className={`w-full whitespace-nowrap  rounded-lg flex items-center duration-200 mr-2 cursor-pointer`}>
+              className={`xl:text-md text-sm xl:border-l-8 border-l-4 xl:my-2 my-0.5 border-gray-400 bg-gray-100 hover:bg-gray-200 w-full xl:py-2 lg:py-1 py-0.25 xl:px-4 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex items-center duration-200 mr-2 cursor-pointer`}>
                 <PiPersonSimpleBikeBold className="w-4 h-4 mx-1"/>BikeShare
             </div>
           :
