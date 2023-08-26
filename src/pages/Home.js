@@ -18,6 +18,7 @@ const Home = () => {
   const locationMarker=useRef(null);
   const wholeFoodsMarkersRef = useRef([]); // ref to store Whole Foods markers
   const traderJoesMarkersRef = useRef([]); // ref to store Trader Joe's markers
+  const gymMarkersRef = useRef([]); // ref to store Gym markers
 
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -94,7 +95,45 @@ const Home = () => {
     } else {
       removeAllMarkers(traderJoesMarkersRef);
     }
+    if (showGyms) {
+      const gyms=require('../data/gym_coordinates.geojson')
+      console.log(gyms)
+      fetch("/static/media/gym_coordinates.e039c3ed6528dac26057.geojson")
+        .then(r => r.json())
+        .then(data => {
+          removeAllMarkers(gymMarkersRef);
+          data.features.forEach(feature => {
+
+            const coordinates = feature.geometry.coordinates;
+  
+            // Create a popup with the gym's name
+            const popup = new mapboxgl.Popup({ offset: 25 })
+              .setText(feature.properties.name); // Assuming the name is stored in the 'name' property
+  
+            // Create the marker and bind the popup to it
+            const marker = new mapboxgl.Marker({ color: 'green' })
+              .setLngLat(coordinates)
+              .setPopup(popup) // Bind the popup to the marker
+              .addTo(map.current);
+  
+            // Add a hover event to show the popup
+            marker.getElement().addEventListener('mouseenter', () => marker.togglePopup());
+            marker.getElement().addEventListener('mouseleave', () => marker.togglePopup());
+  
+            gymMarkersRef.current.push(marker);
+          });
+        })
+        .catch(error => {
+          console.error("There was an issue loading the gym data:", error);
+        });
+    } else {
+      removeAllMarkers(gymMarkersRef);
+    }
   }
+  
+  
+  
+  
 
   const updateOpacity = () => {
     if (!map.current) return;
@@ -120,6 +159,9 @@ const Home = () => {
     }
     if (traderJoes) {
       opacityExpression = ['-', opacityExpression, ['*', ['get', 'trader_joes_score'], 0.1]];
+    }
+    if (showGyms) {
+      opacityExpression = ['-', opacityExpression, ['*', ['get', 'gym_score'], 0.1]];
     }
 
 
@@ -332,7 +374,7 @@ const Home = () => {
 
       
 
-  }, [showQuadrantColors, showParks, showCrime, showBikes, locationLatLong, wholeFoods, traderJoes, map.current]);
+  }, [showQuadrantColors, showParks, showCrime, showBikes, locationLatLong, wholeFoods, traderJoes, showGyms, map.current]);
 
 
 
@@ -531,7 +573,10 @@ const Home = () => {
         }
         {
           showGrocery ?
-            <div onClick={()=>setShowGrocery(false)}
+            <div onClick={()=>{
+                setShowGrocery(false);
+                setWholeFoods(false)
+                setTraderJoes(false)}}
               className={`w-full whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
                
                <div className="flex items-center">
@@ -588,18 +633,6 @@ const Home = () => {
                
                <div className="flex items-center">
                <CiDumbbell className="w-4 h-4 mx-1"/>Gym Chains
-                </div>
-               <div className="grid grid-cols-3 gap-2">
-                  <div onClick={(e)=>{e.stopPropagation()
-                                      setTraderJoes(!traderJoes)}} 
-                      className={`${traderJoes ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg px-2 py-1 cursor-pointer`}>
-                    Trader Joe's
-                  </div>
-                  <div onClick={(e)=>{e.stopPropagation()
-                                      }} 
-                      className={`${wholeFoods ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg px-2 py-1 cursor-pointer`}>
-                    Whole Foods
-                  </div>
                 </div>
             </div>
           :

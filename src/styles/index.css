@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.mapboxgl-popup{
+  z-index:1000;
+}
+
 @layer components{
     .w-88{
       width: 22rem;
