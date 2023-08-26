@@ -15,8 +15,9 @@ mapboxgl.accessToken = process.env.REACT_APP_TOKEN;
 const Home = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const parkMarkers = useRef([]); 
   const locationMarker=useRef(null);
+  const wholeFoodsMarkersRef = useRef([]); // ref to store Whole Foods markers
+  const traderJoesMarkersRef = useRef([]); // ref to store Trader Joe's markers
 
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -24,6 +25,7 @@ const Home = () => {
   const [lat, setLat] = useState(37.75);
   const [zoom, setZoom] = useState(11);
 
+  const [showInfo,setShowInfo]=useState(false);
   
   const [showQuadrantColors,setShowQuadrantColors]=useState(false)
   const [showParks,setShowParks]=useState(false);
@@ -35,13 +37,64 @@ const Home = () => {
   //groceries
     const [traderJoes,setTraderJoes]=useState(false);
     const [wholeFoods,setWholeFoods]=useState(false);
-    const [safeway,setSafeway]=useState(false);
 
   const [showBart,setShowBart]=useState(false);
     const [bartMode,setBartMode]=useState("Walking")
   const [showBikes,setShowBikes]=useState(false);
   const [showGyms,setShowGyms]=useState(false);
 
+
+  const removeAllMarkers = (markerRef) => {
+    markerRef.current.forEach(marker => {
+      marker.remove();
+    });
+    markerRef.current.length = 0; // Clear the ref array
+  }
+  
+  
+  const showMarkers = () => {
+    if (!map.current) return;
+  
+    if (wholeFoods){
+      fetch("/static/media/whole_foods_coordinates.d68ad5a5432e91d044e4.geojson")
+        .then(r => r.json())
+        .then(data => {
+          removeAllMarkers(wholeFoodsMarkersRef);
+          data.features.forEach(feature => {
+            const coordinates = feature.geometry.coordinates;
+            const marker = new mapboxgl.Marker({ color: 'red' })
+              .setLngLat(coordinates)
+              .addTo(map.current);
+            wholeFoodsMarkersRef.current.push(marker);
+          });
+        })
+        .catch(error => {
+          console.error("There was an issue loading the Whole Foods data:", error);
+        });
+    } else {
+      removeAllMarkers(wholeFoodsMarkersRef);
+    }
+  
+    if (traderJoes){
+      fetch("/static/media/trader_joes_coordinates.b7930c96fbd1e2811b32.geojson")
+        .then(r => r.json())
+        .then(data => {
+          removeAllMarkers(traderJoesMarkersRef);
+          data.features.forEach(feature => {
+            const coordinates = feature.geometry.coordinates;
+            const marker = new mapboxgl.Marker({ color: 'blue' })
+              .setLngLat(coordinates)
+              .addTo(map.current);
+            traderJoesMarkersRef.current.push(marker);
+          });
+        })
+        .catch(error => {
+          console.error("There was an issue loading the Trader Joe's data:", error);
+        });
+    } else {
+      removeAllMarkers(traderJoesMarkersRef);
+    }
+  }
 
   const updateOpacity = () => {
     if (!map.current) return;
@@ -62,6 +115,13 @@ const Home = () => {
     if (showBikes) {
       opacityExpression = ['-', opacityExpression, ['*', ['get', 'bike_score'], 0.1]];
     }
+    if (wholeFoods) {
+      opacityExpression = ['-', opacityExpression, ['*', ['get', 'whole_foods_score'], 0.1]];
+    }
+    if (traderJoes) {
+      opacityExpression = ['-', opacityExpression, ['*', ['get', 'trader_joes_score'], 0.1]];
+    }
+
 
   
     // Ensure opacity doesn't exceed 1
@@ -71,39 +131,6 @@ const Home = () => {
     map.current.setPaintProperty('quadrant-fill', 'fill-opacity', opacityExpression);
   };
 
-
-
-  //FUNCTION TO SHOW PARKS
-  // Function to toggle park markers
-    const toggleParkMarkers = (show) => {
-      if (show) {
-        fetch('/static/media/parks.157b43c98b996f8882ca.geojson')
-        .then((r) => r.json())
-        .then((data) => {
-          data.features.forEach((feature) => {
-            // Create markers using feature properties
-            const popup = new mapboxgl.Popup({ offset: 25 }).setText(
-              feature.properties.Map_Label
-            );
-            const { coordinates } = feature.geometry;
-            const marker = new mapboxgl.Marker({
-              color: '#57fa7d',
-              scale: 0.6,
-            })
-              .setLngLat(coordinates)
-              .setPopup(popup)
-              .addTo(map.current);
-  
-            // Add the created marker to the parkMarkers array
-            parkMarkers.current.push(marker);
-          });
-        });
-    } else {
-      // Remove existing markers if show is false
-      parkMarkers.current.forEach((marker) => marker.remove());
-      parkMarkers.current = [];
-    }
-  };
 
 
 
@@ -273,8 +300,8 @@ const Home = () => {
   useEffect(() => {
     if (map.current && mapLoaded) {
     
-      updateOpacity(showParks, showCrime, showBikes);
-  
+      updateOpacity();
+      showMarkers();
 
       
       map.current.setPaintProperty('quadrant-fill', 'fill-color', showQuadrantColors
@@ -305,7 +332,7 @@ const Home = () => {
 
       
 
-  }, [showQuadrantColors, showParks, showCrime, showBikes, locationLatLong, map.current]);
+  }, [showQuadrantColors, showParks, showCrime, showBikes, locationLatLong, wholeFoods, traderJoes, map.current]);
 
 
 
@@ -321,7 +348,8 @@ const Home = () => {
 
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
+    <>
+    <div className={`${showInfo ? " opacity-50" : "opactiy-100"}  bg-white flex h-screen w-screen overflow-hidden`} onClick={()=>setShowInfo(false)}>
       <div className="w-1/4 h-screen">
         <div style={{width:"100%"}} className="bg-blue-100 border-b-8 border-blue-900 p-3 flex items-center justify-center">
           <img src={logo}  className="w-20 h-20"/>
@@ -335,7 +363,13 @@ const Home = () => {
                   text-gray-400 border-gray-400 h-5 w-5  font-semibold
                   hover:text-gray-700 hover:border-gray-700 duration-200 cursor-pointer
                   font-serif"
-                  style={{fontSize:"12px"}}>i</p>
+                  style={{fontSize:"12px"}} onClick={(e)=>{
+                    e.stopPropagation()
+                    setShowInfo(true)
+                    }}>i</p>
+        </div>
+        <div>
+
         </div>
         <div className="flex flex-col py-4 px-3">
           <h1 className="text-2xl text-gray-900 font-semibold">Add More Filters</h1>
@@ -414,6 +448,42 @@ const Home = () => {
       </div>
 
     </div>
+    {
+      showInfo ? 
+      <div className="absolute opacity-100 h-full w-full top-0 left-0 right-0 mx-auto my-36" style={{width:"80vw"}}>
+          <div class="text-sm bg-white pb-16 px-8 rounded-sm">
+            <h1 className="text-3xl font-semibold text-center py-6">
+              About
+            </h1>
+            <div class="text-lg mb-1">
+              <b>How does Bayborhood work?</b>
+            </div>
+            Bayborhood helps you discover suitable neighborhoods in San Francisco, based on your preferences.
+            <ul class="list-decimal ml-6">
+              <li class="mt-1">
+                <b>Adding Filters</b>: From the left sidebar, add filters to narrow down your search. You can also click on some filters to fine-tune your preferences.</li>
+                <li class="mt-1"><b>View Map</b>: The map is interactive and will update as you add filters. Darker areas indicate higher alignment with your preferences. You can hover over a neighborhood to see its name and the quadrant it's in.</li>
+                <li class="mt-1"><b>See Quadrants</b>: On the bottom right, toggle "See Quadrants" to color-coordinate the map to color every neighborhood separately by their quadrant.</li>
+              </ul>
+              <div class="text-lg mt-4 mb-1"><b>Where do you get the data?</b>
+              </div>We source our data from several public datasets, and apply additional processing to aggregate the disparate datasets into a convenient and accessible format.
+              <ul class="ml-6 list-disc">
+                <li class="mt-1"><b>Neighborhoods and Quadrants</b>: 2022 Neighborhood Analysis  <a href="https://data.sfgov.org/" target="_blank" rel="noreferrer" class="text-blue-500 underline">DataSF</a></li>
+                <li class="mt-1"><b>Proximity to Specific Locations</b>: <a href="https://docs.microsoft.com/en-us/bingmaps/rest-services/routes/calculate-an-isochrone" target="_blank" rel="noreferrer" class="text-blue-500 underline">Bing Maps Isochrone API</a> (includes transit data)</li>
+                <li class="mt-1"><b>Grocery Chains and Gyms</b>: <a href="https://developer.foursquare.com/docs/places-api-overview" target="_blank" rel="noreferrer" class="text-blue-500 underline">Foursquare Places API</a></li>
+                <li class="mt-1"><b>Parks and Rec Centers</b>: <a href="https://data.sfgov.org/" target="_blank" rel="noreferrer" class="text-blue-500 underline">Data SF</a></li>
+                <li class="mt-1"><b>BikeShare</b>: <a href="" target="_blank" rel="noreferrer" class="text-blue-500 underline">Lyft API</a></li>
+                <li class="mt-1"><b>BART Stations</b>: <a href="https://www.bart.gov/schedules/developers/api" target="_blank" rel="noreferrer" class="text-blue-500 underline">BART API</a></li>
+                <li class="mt-1"><b>Safety</b>: <a href="" target="_blank" rel="noreferrer" class="text-blue-500 underline">Data SF</a></li>
+                {/* <li class="mt-1"><b>Housing Prices</b>: <a href="" target="_blank" rel="noreferrer" class="text-blue-500 underline">Streeteasy Data Dashboard</a></li> */}
+              </ul>
+              </div>
+        
+      </div>
+      :
+      <></>
+    }
+    </>
   );
 
   function displayActiveFilters(){
@@ -424,7 +494,7 @@ const Home = () => {
             <div onClick={()=>setShowLocation(false)}
               className={`w-full whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
                
-               <div onClick={(e)=>e.stopPropagation()} className="flex items-center">
+               <div className="flex items-center">
                <GrLocation className="w-4 h-4 mx-1"/>Proximity to Location
                 </div>
                <div  onClick={(e)=>e.stopPropagation()} className="">
@@ -467,21 +537,17 @@ const Home = () => {
                <div className="flex items-center">
                 <AiOutlineShoppingCart className="w-4 h-4 mx-1"/>Grocery Chains
                 </div>
-               <div className="grid grid-cols-3 gap-2">
+               <div className="grid grid-cols-2 gap-2">
                   <div onClick={(e)=>{e.stopPropagation()
                                       setTraderJoes(!traderJoes)}} 
                       className={`${traderJoes ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg px-2 py-1 cursor-pointer`}>
                     Trader Joe's
                   </div>
                   <div onClick={(e)=>{e.stopPropagation()
+                                      e.preventDefault()
                                       setWholeFoods(!wholeFoods)}} 
                       className={`${wholeFoods ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg px-2 py-1 cursor-pointer`}>
                     Whole Foods
-                  </div>
-                  <div onClick={(e)=>{e.stopPropagation()
-                                      setSafeway(!safeway)}} 
-                      className={`${safeway ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg px-2 py-1 cursor-pointer`}>
-                    Safeway 
                   </div>
                 </div>
             </div>
@@ -530,14 +596,9 @@ const Home = () => {
                     Trader Joe's
                   </div>
                   <div onClick={(e)=>{e.stopPropagation()
-                                      setWholeFoods(!wholeFoods)}} 
+                                      }} 
                       className={`${wholeFoods ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg px-2 py-1 cursor-pointer`}>
                     Whole Foods
-                  </div>
-                  <div onClick={(e)=>{e.stopPropagation()
-                                      setSafeway(!safeway)}} 
-                      className={`${safeway ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg px-2 py-1 cursor-pointer`}>
-                    Safeway 
                   </div>
                 </div>
             </div>
@@ -556,8 +617,11 @@ const Home = () => {
 
 
     </div>
+    
     )
+    
   }
+  
 };
 
 export default Home;

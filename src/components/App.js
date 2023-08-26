@@ -5,9 +5,9 @@ const App = () => {
     return (
         <Routes>
           <Route path="*" element={
-            <>
+            <div className="bg-black">
               <Home />
-            </>
+            </div>
           } />
 
         </Routes>
