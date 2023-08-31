@@ -316,22 +316,23 @@ const Home = () => {
 
 
 
+        //UPDATE ZOOM AND CENTER OF MAP BASED ON DRAG
+        map.current.on('move', () => {
+          setZoom(map.current.getZoom().toFixed(2));
+        });
+  
+        map.current.on('drag', () => {
+          const center = map.current.getCenter();
+          const newLng = Math.max(-122.43, Math.min(-122.41, center.lng));
+          const newLat = Math.max(37.65, Math.min(37.85, center.lat));
+  
+          if (center.lng !== newLng || center.lat !== newLat) {
+            map.current.setCenter(new mapboxgl.LngLat(newLng, newLat));
+          }
+        });
     });
 
-    //UPDATE ZOOM AND CENTER OF MAP BASED ON DRAG
-      map.current.on('move', () => {
-        setZoom(map.current.getZoom().toFixed(2));
-      });
 
-      map.current.on('drag', () => {
-        const center = map.current.getCenter();
-        const newLng = Math.max(-122.43, Math.min(-122.41, center.lng));
-        const newLat = Math.max(37.65, Math.min(37.85, center.lat));
-
-        if (center.lng !== newLng || center.lat !== newLat) {
-          map.current.setCenter(new mapboxgl.LngLat(newLng, newLat));
-        }
-      });
 
         
       setMapLoaded(true);
