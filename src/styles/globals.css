@@ -1,0 +1,58 @@
+.title{
+  font-size: 1.8vw 
+}
+.subTitle{
+  font-size:1vw
+}
+.subTitle2{
+  font-size: 0.8vw
+}
+.bodyText{
+  font-size:0.7vw;
+}
+.bodyText2{
+  font-size:6px;
+}
+
+/* Begin Media Queries*/
+@media screen and (max-width: 1280px) {
+  .title{
+    font-size: 2vw 
+  }
+  .subTitle{
+    font-size:1.2vw
+  }
+  .subTitle2{
+    font-size: 1vw
+  }
+  .bodyText{
+    font-size:0.9vw;
+  }
+  .bodyText2{
+    font-size:6px;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .title{
+    font-size: 2.8vw 
+  }
+  .subTitle{
+    font-size:1.8vw
+  }
+  .subTitle2{
+    font-size: 1.5vw
+  }
+  .bodyText{
+    font-size:1.4vw;
+  }
+  .bodyText2{
+    font-size:12px;
+  }
+}
+@media screen and (max-width: 850px) {
+
+  .bodyText2{
+    font-size:8px;
+  }
+}
