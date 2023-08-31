@@ -8,7 +8,6 @@
 /.pnp
 .pnp.js
 /src/config
-src/data
 # testing
 /coverage
 
