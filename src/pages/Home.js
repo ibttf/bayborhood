@@ -390,7 +390,7 @@ const Home = () => {
       {/* DESKTOP SIDEBAR */}
       <div className="md:w-1/4 w-1/2 h-screen overflow-y-scroll">
         <div style={{width:"100%"}} className="bg-blue-100 xl:border-b-8 border-b-4 border-blue-900 xl:p-3 p-1 flex items-center justify-center">
-          <img src={logo}  className="2xl:w-10 2xl:h-10 xl:w-8 xl:h-8 lg:w-8 lg:h-8 w-6 h-6"/>
+          <img src={logo} alt="logo" className="2xl:w-10 2xl:h-10 xl:w-8 xl:h-8 lg:w-8 lg:h-8 w-6 h-6"/>
           <h1 className=" font-semibold text-red-700 font-mono title">
             <span>
               Bay
@@ -498,9 +498,9 @@ const Home = () => {
               <div class="lg:text-lg text-sm mt-4 mb-1"><b>Where do you get the data?</b>
               </div>We source our data from several public datasets, and apply additional processing to aggregate the disparate datasets into a convenient and accessible format.
               <ul class="ml-6 list-disc">
-                <li class="mt-1"><b>Neighborhoods and Quadrants</b>: 2022 Neighborhood Analysis  <a href="https://data.sfgov.org/" target="_blank" rel="noreferrer" class="text-blue-500 underline">DataSF</a></li>
+                <li class="mt-1"><b>Neighborhoods and Quadrants</b>: 2022 Neighborhood Analysis  <a href="https://data.sfgov.org" target="_blank" rel="noreferrer" class="text-blue-500 underline">DataSF</a></li>
               <li class="mt-1"><b>Grocery Chains and Gyms</b>: <a href="https://developer.foursquare.com/docs/places-api-overview" target="_blank" rel="noreferrer" class="text-blue-500 underline">Foursquare Places API</a></li>
-                <li class="mt-1"><b>Parks</b>: <a href="https://data.sfgov.org/" target="_blank" rel="noreferrer" class="text-blue-500 underline">Data SF</a></li>
+                <li class="mt-1"><b>Parks</b>: <a href="https://data.sfgov.org" target="_blank" rel="noreferrer" class="text-blue-500 underline">Data SF</a></li>
                 <li class="mt-1"><b>BikeShare</b>: <a href="" target="_blank" rel="noreferrer" class="text-blue-500 underline">Lyft API</a></li>
                 <li class="mt-1"><b>BART Stations</b>: <a href="https://www.bart.gov/schedules/developers/api" target="_blank" rel="noreferrer" class="text-blue-500 underline">BART API</a></li>
                 <li class="mt-1"><b>Safety</b>: <a href="" target="_blank" rel="noreferrer" class="text-blue-500 underline">Data SF</a></li>
