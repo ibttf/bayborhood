@@ -54,9 +54,9 @@ const Home = () => {
     if (!map.current) return;
     
     const traderjoes_res=require('../data/trader_joes_coordinates.geojson')
-    console.log(traderjoes_res)
+    const wholefoods_res=require('../data/whole_foods_coordinates.geojson')
     if (wholeFoods){
-      fetch("/static/media/whole_foods_coordinates.d68ad5a5432e91d044e4.geojson")
+      fetch(wholefoods_res)
         .then(r => r.json())
         .then(data => {
           removeAllMarkers(wholeFoodsMarkersRef);
@@ -76,8 +76,7 @@ const Home = () => {
     }
   
     if (traderJoes){
-      // fetch("/static/media/trader_joes_coordinates.b7930c96fbd1e2811b32.geojson")
-      fetch("/static/media/trader_joes_coordinates.b7930c96fbd1e2811b32.geojson")
+      fetch(traderjoes_res)
         .then(r => r.json())
         .then(data => {
           removeAllMarkers(traderJoesMarkersRef);
