@@ -91,8 +91,8 @@ npm start
 </div>
 
 1. [`Select Features`] Click on various features on the sidebar to add filters that are important to you. The neighborhoods will automatically be shaded lighter or darker depending on their proximity to those specific features. Click on the +/- at the top right of the map to zoom in or zoom out, click and move the mouse around to move the map, and select additional features under select filters to specify even further. Click on "Show Quadrants" to color in the different quadrants of San Francisco different colors.
-![image](![Uploading Screenshot 2023-08-30 at 6.19.56 PM.png…]()
-https://user-images.githubusercontent.com/60560932/198585683-405ec66c-a80f-4c11-ab4a-042f26703724.png)
+
+<img width="1658" alt="Screenshot 2023-08-30 at 6 19 45 PM" src="https://github.com/roylee0912/bayborhood/assets/60560932/ed3279ca-352f-4bb5-b8cd-598b88cde374">
 
 
 
