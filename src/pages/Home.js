@@ -479,7 +479,7 @@ const Home = () => {
     </div>
     {
       showInfo ? 
-      <div className="absolute opacity-100 h-full w-full top-0 left-0 right-0 mx-auto lg:py-24 py-12" style={{width:"80vw", height:"80vh"}}>
+      <div className="absolute opacity-100 h-full w-full top-0 left-0 right-0 mx-auto lg:my-24 my-12" style={{width:"80vw", height:"80vh"}}>
           <div class="lg:text-sm text-xs bg-white pb-16 px-8 rounded-md">
             <h1 className="lg:text-3xl text-xl font-semibold text-center py-6">
               About
