@@ -164,7 +164,7 @@ const Home = () => {
       opacityExpression = ['-', opacityExpression, ['*', ['get', 'gym_score'], 0.1]];
     }
     if (showBart) {
-      if (bartMode=="Walking"){
+      if (bartMode==="Walking"){
         opacityExpression = ['-', opacityExpression, ['*', ['get', 'walking_bart_score'], 0.1]];
       }else{
         opacityExpression = ['-', opacityExpression, ['*', ['get', 'driving_bart_score'], 0.1]];
@@ -582,12 +582,12 @@ const Home = () => {
                <div className="grid grid-cols-3 gap-2">
                   <div onClick={(e)=>{e.stopPropagation()
                                       setBartMode("Walking")}} 
-                      className={`${bartMode=="Walking" ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 lg:py-1 py-0.25 cursor-pointer 2xl:text-md bodyText2`}>
+                      className={`${bartMode==="Walking" ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 lg:py-1 py-0.25 cursor-pointer 2xl:text-md bodyText2`}>
                     Walking
                   </div>
                   <div onClick={(e)=>{e.stopPropagation()
                                       setBartMode("Transit")}} 
-                                      className={`${bartMode=="Transit" ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 lg:py-1 py-0.25 cursor-pointer 2xl:text-md bodyText2`}>
+                                      className={`${bartMode==="Transit" ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 lg:py-1 py-0.25 cursor-pointer 2xl:text-md bodyText2`}>
                     Transit
                   </div>
                 </div>
