@@ -346,7 +346,7 @@ const Home = () => {
 //SECOND USE EFFECT TO UPDATE THINGS WITHOUT RERENDER
 
   useEffect(() => {
-    if (map.current && mapLoaded) {
+    if (map.current && map.current.isStyleLoaded() && mapLoaded) {
     
       updateOpacity();
       showMarkers();
