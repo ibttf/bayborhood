@@ -516,7 +516,7 @@ const Home = () => {
               <li class="mt-1"><b>Grocery Chains and Gyms</b>: <a href="https://developer.foursquare.com/docs/places-api-overview" target="_blank" rel="noreferrer" class="text-blue-500 underline">Foursquare Places API</a></li>
                 <li class="mt-1"><b>Parks</b>: <a href="https://data.sfgov.org" target="_blank" rel="noreferrer" class="text-blue-500 underline">Data SF</a></li>
                 <li class="mt-1"><b>BikeShare</b>: <a href="https://www.lyft.com/bikes/bay-wheels/system-data" target="_blank" rel="noreferrer" class="text-blue-500 underline">Lyft API</a></li>
-                <li class="mt-1"><b>BART Stations</b>: <a href="https://www.bart.gov/schedules/developers/api" target="_blank" rel="noreferrer" class="text-blue-500 underline">BART API</a></li>
+                <li class="mt-1"><b>BART Stations</b>: <a href="https://www.bart.gov/schedules/developers/api" target="_blank" rel="noreferrer" class="text-blue-500 underline">BART API</a> (Distance calculated by <a href="https://www.microsoft.com/en-us/maps/bing-maps/distance-matrix" target="_blank">Bing Distance API</a>)</li></a></li>
                 <li class="mt-1"><b>Safety</b>: <a href="https://data.sfgov.org" target="_blank" rel="noreferrer" class="text-blue-500 underline">Data SF</a></li>
                 <li class="mt-1"><b>Housing Prices</b>: <a href="https://developers.rentcast.io/reference/market-statistics" target="_blank" rel="noreferrer" class="text-blue-500 underline">RentCast </a>(calculated by ZIP Code)</li>
                 {/* <li class="mt-1"><b>Housing Prices</b>: <a href="" target="_blank" rel="noreferrer" class="text-blue-500 underline">Streeteasy Data Dashboard</a></li> */}
