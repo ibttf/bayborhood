@@ -6,7 +6,7 @@ import {BsShield, BsTree,BsTrainFront} from "react-icons/bs"
 import {FiShoppingCart} from "react-icons/fi"
 import {PiPersonSimpleBikeBold} from "react-icons/pi"
 import {CiDumbbell} from "react-icons/ci"
-
+import {BiMoneyWithdraw} from 'react-icons/bi'
 
 mapboxgl.accessToken = process.env.REACT_APP_TOKEN;
 
@@ -38,6 +38,8 @@ const Home = () => {
 
   const [showBart,setShowBart]=useState(false);
     const [bartMode,setBartMode]=useState("Walking")
+  const [showBudget,setShowBudget]=useState(false)
+    const[budgetMax,setBudgetMax]=useState(4750)
   const [showBikes,setShowBikes]=useState(false);
   const [showGyms,setShowGyms]=useState(false);
 
@@ -96,7 +98,6 @@ const Home = () => {
     }
     if (showGyms) {
       const gyms=require('../data/gym_coordinates.geojson')
-      console.log(gyms)
       fetch("/static/media/gym_coordinates.e039c3ed6528dac26057.geojson")
         .then(r => r.json())
         .then(data => {
@@ -169,7 +170,16 @@ const Home = () => {
         opacityExpression = ['-', opacityExpression, ['*', ['get', 'driving_bart_score'], 0.1]];
       }
     }
-
+    if (showBudget) {
+      opacityExpression = [
+          '-', 
+          opacityExpression, 
+          ['case',
+              ['>=', ['get', 'cost'], budgetMax], 0.5, 
+              0 // default (no decrease)
+          ]
+      ];
+  }
   
     // Ensure opacity doesn't exceed 1
     opacityExpression = ['min', 1, opacityExpression];
@@ -323,8 +333,8 @@ const Home = () => {
   
         map.current.on('drag', () => {
           const center = map.current.getCenter();
-          const newLng = Math.max(-122.43, Math.min(-122.41, center.lng));
-          const newLat = Math.max(37.65, Math.min(37.85, center.lat));
+          const newLng = Math.max(-122.5, Math.min(-122.3, center.lng));
+          const newLat = Math.max(37.7, Math.min(37.8, center.lat));
   
           if (center.lng !== newLng || center.lat !== newLat) {
             map.current.setCenter(new mapboxgl.LngLat(newLng, newLat));
@@ -369,7 +379,7 @@ const Home = () => {
 
       
 
-  }, [showQuadrantColors, showParks, showCrime, showBikes, locationLatLong, wholeFoods, traderJoes, showGyms, showBart, bartMode, map.current]);
+  }, [showQuadrantColors, showParks, showCrime, showBikes, locationLatLong, wholeFoods, traderJoes, showGyms, showBart, bartMode, showBudget,budgetMax, map.current]);
 
 
 
@@ -388,17 +398,17 @@ const Home = () => {
     <>
     <div className={`${showInfo ? " opacity-50" : "opactiy-100"}  bg-white flex h-screen w-screen overflow-hidden`} onClick={()=>setShowInfo(false)}>
       {/* DESKTOP SIDEBAR */}
-      <div className="md:w-1/4 w-1/2 h-screen overflow-y-scroll">
+      <div className="xl:w-1/4 w-1/2 h-screen overflow-y-scroll">
         <div style={{width:"100%"}} className="bg-blue-100 xl:border-b-8 border-b-4 border-blue-900 xl:p-3 p-1 flex items-center justify-center">
-          <img src={logo} alt="logo" className="2xl:w-10 2xl:h-10 xl:w-8 xl:h-8 lg:w-8 lg:h-8 w-6 h-6"/>
+          <img src={logo} alt="logo" className="2xl:w-10 2xl:h-10 xl:w-8 xl:h-8 lg:w-8 lg:h-8 md:w-6 md:h-6 w-4 h-4"/>
           <h1 className=" font-semibold text-red-700 font-mono title">
             <span>
               Bay
             </span>
               borhood
           </h1>
-          <p className="border-2 rounded-full justify-center items-center flex ml-2 xl:-mt-4 lg:-mt-2 
-                  text-gray-400 border-gray-400 xl:h-5 xl:w-5 w-3 h-3  font-semibold
+          <p className="lg:border-2 sm:border-1 border-0.5 rounded-full justify-center items-center flex ml-2 xl:-mt-4 lg:-mt-2 
+                  text-gray-400 border-gray-400 xl:h-5 xl:w-5 w-4 h-4  font-semibold
                   hover:text-gray-700 hover:border-gray-700 duration-200 cursor-pointer
                   font-serif lg:text-xs text-xxs"
                   
@@ -413,30 +423,34 @@ const Home = () => {
         <div className="flex flex-col xl:py-4 xl:px-3 py-2 px-1">
           <h1 className=" text-gray-900 font-semibold subTitle" >Add More Filters</h1>
           <h3 className="mb-1 text-gray-600 subTitle2" >Continue refining your ideal neighborhoods</h3>
-          <div className="grid grid-cols-1 grid-flow-row gap-2 xl:border-b-4 border-b-2 border-blue-900 bodyText" >
+          <div className="grid grid-cols-1 grid-flow-row lg:gap-2 sm:gap-1 gap-0.5 xl:border-b-4 border-b-2 border-blue-900 bodyText" >
             <div onClick={()=>setShowCrime(true)}
-            className={`lg:w-8/12 w-fit  whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-1.5 border-2 border-gray-300 ${showCrime ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
+            className={`lg:w-8/12 w-fit  whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-1.5 md:border-2 border-1 border-gray-300 ${showCrime ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
               <BsShield className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>Safety
             </div>
             <div onClick={()=>setShowGyms(true)}
-              className={` lg:w-8/12 w-fit  whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-1.5 border-2 border-gray-300 ${showGyms ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
+              className={` lg:w-8/12 w-fit  whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-1.5 md:border-2 border-1 border-gray-300 ${showGyms ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
               <CiDumbbell className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>Gyms
             </div>
             <div onClick={()=>setShowParks(true)}
-              className={` lg:w-8/12 w-fit  whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-1.5 border-2 border-gray-300 ${showParks ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
+              className={` lg:w-8/12 w-fit  whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-1.5 md:border-2 border-1 border-gray-300 ${showParks ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
               <BsTree className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>Parks
             </div>
           
             <div onClick={()=>setShowGrocery(true)}
-            className={` lg:w-8/12 w-fit  whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-1.5 border-2 border-gray-300 ${showGrocery ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
+            className={` lg:w-8/12 w-fit  whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-1.5 md:border-2 border-1 border-gray-300 ${showGrocery ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
               <FiShoppingCart className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>Grocery Chains
             </div>
             <div onClick={()=>setShowBart(true)}
-              className={` lg:w-8/12 w-fit  whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-1.5 border-2 border-gray-300 ${showBart ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
+              className={` lg:w-8/12 w-fit  whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-1.5 md:border-2 border-1 border-gray-300 ${showBart ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
               <BsTrainFront className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>BART Stations
             </div>
+            <div onClick={()=>setShowBudget(true)}
+            className={`lg:w-8/12 w-fit  whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-1.5 md:border-2 border-1 border-gray-300 ${showBudget ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
+              <BiMoneyWithdraw className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>Budget
+            </div>
             <div onClick={()=>setShowBikes(true)}
-            className={`mb-2 lg:w-8/12 w-fit  whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-1.5 border-2 border-gray-300 ${showBikes ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
+            className={`mb-2 lg:w-8/12 w-fit  whitespace-nowrap xl:py-2 xl:px-3 lg:py-1 lg:px-2 py-0.25 px-1.5 md:border-2 border-1 border-gray-300 ${showBikes ? "bg-gray-100 cursor-not-allowed opacity-50" : "opacity-100 hover:bg-gray-100 bg-white cursor-pointer"} rounded-lg flex items-center   duration-200`}>
               <PiPersonSimpleBikeBold className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>BikeShare
             </div>
             </div>
@@ -480,12 +494,12 @@ const Home = () => {
     </div>
     {
       showInfo ? 
-      <div className="absolute opacity-100 h-full w-full top-0 left-0 right-0 mx-auto lg:my-24 my-12" style={{width:"80vw", height:"80vh"}}>
+      <div className="absolute opacity-100 left-0 right-0 mx-auto about-container">
           <div class="lg:text-sm text-xs bg-white pb-16 px-8 rounded-md">
-            <h1 className="lg:text-3xl text-xl font-semibold text-center py-6">
+            <h1 className="lg:text-3xl sm:text-xl text-lg font-semibold text-center py-6">
               About
             </h1>
-            <div class="lg:text-lg text-sm mb-1">
+            <div class="lg:text-lg text-md mb-1">
               <b>How does Bayborhood work?</b>
             </div>
             Bayborhood helps you discover suitable neighborhoods in San Francisco, based on your preferences.
@@ -501,9 +515,10 @@ const Home = () => {
                 <li class="mt-1"><b>Neighborhoods and Quadrants</b>: 2022 Neighborhood Analysis  <a href="https://data.sfgov.org" target="_blank" rel="noreferrer" class="text-blue-500 underline">DataSF</a></li>
               <li class="mt-1"><b>Grocery Chains and Gyms</b>: <a href="https://developer.foursquare.com/docs/places-api-overview" target="_blank" rel="noreferrer" class="text-blue-500 underline">Foursquare Places API</a></li>
                 <li class="mt-1"><b>Parks</b>: <a href="https://data.sfgov.org" target="_blank" rel="noreferrer" class="text-blue-500 underline">Data SF</a></li>
-                <li class="mt-1"><b>BikeShare</b>: <a href="" target="_blank" rel="noreferrer" class="text-blue-500 underline">Lyft API</a></li>
+                <li class="mt-1"><b>BikeShare</b>: <a href="https://www.lyft.com/bikes/bay-wheels/system-data" target="_blank" rel="noreferrer" class="text-blue-500 underline">Lyft API</a></li>
                 <li class="mt-1"><b>BART Stations</b>: <a href="https://www.bart.gov/schedules/developers/api" target="_blank" rel="noreferrer" class="text-blue-500 underline">BART API</a></li>
-                <li class="mt-1"><b>Safety</b>: <a href="" target="_blank" rel="noreferrer" class="text-blue-500 underline">Data SF</a></li>
+                <li class="mt-1"><b>Safety</b>: <a href="https://data.sfgov.org" target="_blank" rel="noreferrer" class="text-blue-500 underline">Data SF</a></li>
+                <li class="mt-1"><b>Housing Prices</b>: <a href="https://developers.rentcast.io/reference/market-statistics" target="_blank" rel="noreferrer" class="text-blue-500 underline">RentCast </a>(calculated by ZIP Code)</li>
                 {/* <li class="mt-1"><b>Housing Prices</b>: <a href="" target="_blank" rel="noreferrer" class="text-blue-500 underline">Streeteasy Data Dashboard</a></li> */}
               </ul>
               </div>
@@ -527,9 +542,9 @@ const Home = () => {
         {
           showCrime ?
             <div onClick={()=>setShowCrime(false)}
-              className={`xl:border-l-8 border-l-4 xl:my-2 my-0.5 border-yellow-400 bg-gray-100 hover:bg-gray-200 w-full xl:py-2 lg:py-1 py-0.25 xl:px-4 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex items-center duration-200 mr-2 cursor-pointer`}>
+              className={`lg:border-l-8 border-l-6 xl:my-2 my-0.5 border-yellow-400 bg-gray-100 hover:bg-gray-200 w-full lg:p-2 py-1 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex items-center duration-200 mr-2 cursor-pointer`}>
               
-              <BsShield className="w-4 h-4 mx-1"/>Safety
+              <BsShield className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>Safety
             </div>
           :
             <></>
@@ -537,8 +552,8 @@ const Home = () => {
         {
           showParks ?
             <div onClick={()=>setShowParks(false)}
-              className={`xl:border-l-8 border-l-4 xl:my-2 my-0.5 border-red-400 bg-gray-100 hover:bg-gray-200 w-full xl:py-2 lg:py-1 py-0.25 xl:px-4 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex items-center duration-200 mr-2 cursor-pointer`}>
-              <BsTree className="w-4 h-4 mx-1"/>Parks
+              className={`lg:border-l-8 border-l-6 xl:my-2 my-0.5 border-red-400 bg-gray-100 hover:bg-gray-200 w-full lg:p-2 py-1 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex items-center duration-200 mr-2 cursor-pointer`}>
+              <BsTree className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>Parks
             </div>
           :
             <></>
@@ -549,21 +564,21 @@ const Home = () => {
                 setShowGrocery(false);
                 setWholeFoods(false)
                 setTraderJoes(false)}}
-              className={`xl:border-l-8 border-l-4 xl:my-2 my-0.5 border-green-400 bg-gray-100 hover:bg-gray-200 w-full xl:py-2 lg:py-1 py-0.25 xl:px-4 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
+              className={`lg:border-l-8 border-l-6 xl:my-2 my-0.5 border-green-400 bg-gray-100 hover:bg-gray-200 w-full lg:p-2 py-1 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
                
                <div className="flex items-center">
-                <FiShoppingCart className="w-4 h-4 mx-1"/>Grocery Chains
+                <FiShoppingCart className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>Grocery Chains
                 </div>
-               <div className="grid grid-cols-2 gap-2">
+               <div className="grid grid-cols-2 lg:gap-2 gap-1">
                   <div onClick={(e)=>{e.stopPropagation()
                                       setTraderJoes(!traderJoes)}} 
-                      className={`${traderJoes ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 lg:py-1 py-0.25 cursor-pointer bodyText2`}>
+                      className={`${traderJoes ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 py-1 cursor-pointer bodyText2`}>
                     Trader Joe's
                   </div>
                   <div onClick={(e)=>{e.stopPropagation()
                                       e.preventDefault()
                                       setWholeFoods(!wholeFoods)}} 
-                      className={`${wholeFoods ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 lg:py-1 py-0.25 cursor-pointer bodyText2`}>
+                      className={`${wholeFoods ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 py-1 cursor-pointer bodyText2`}>
                     Whole Foods
                   </div>
                 </div>
@@ -574,20 +589,20 @@ const Home = () => {
         {
           showBart ?
             <div onClick={()=>setShowBart(false)}
-              className={`xl:border-l-8 border-l-4 xl:my-2 my-0.5 border-blue-400 bg-gray-100 hover:bg-gray-200 w-full xl:py-2 lg:py-1 py-0.25 xl:px-4 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
+              className={`lg:border-l-8 border-l-6 xl:my-2 my-0.5 border-blue-400 bg-gray-100 hover:bg-gray-200 w-full lg:p-2 py-1 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
                
                <div className="flex items-center">
-               <BsTrainFront className="w-4 h-4 mx-1"/>BART Stations
+               <BsTrainFront className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>BART Stations
                 </div>
-               <div className="grid grid-cols-3 gap-2">
+               <div className="grid grid-cols-2 lg:gap-2 gap-1">
                   <div onClick={(e)=>{e.stopPropagation()
                                       setBartMode("Walking")}} 
-                      className={`${bartMode==="Walking" ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 lg:py-1 py-0.25 cursor-pointer 2xl:text-md bodyText2`}>
+                      className={`${bartMode==="Walking" ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 py-1 cursor-pointer 2xl:text-md bodyText2`}>
                     Walking
                   </div>
                   <div onClick={(e)=>{e.stopPropagation()
                                       setBartMode("Transit")}} 
-                                      className={`${bartMode==="Transit" ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 lg:py-1 py-0.25 cursor-pointer 2xl:text-md bodyText2`}>
+                                      className={`${bartMode==="Transit" ? "bg-blue-500 border-blue-200" : "bg-white border-gray-500" } duration-100 text-center border-2 rounded-lg xl:px-2 px-0.5 py-1 cursor-pointer 2xl:text-md bodyText2`}>
                     Transit
                   </div>
                 </div>
@@ -598,11 +613,36 @@ const Home = () => {
         {
           showGyms ?
             <div onClick={()=>setShowGyms(false)}
-              className={`xl:border-l-8 border-l-4 xl:my-2 my-0.5 border-purple-400 bg-gray-100 hover:bg-gray-200 w-full xl:py-2 lg:py-1 py-0.25 xl:px-4 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
+              className={`lg:border-l-8 border-l-6 xl:my-2 my-0.5 border-purple-400 bg-gray-100 hover:bg-gray-200 w-full lg:p-2 py-1 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
                
                <div className="flex items-center">
-               <CiDumbbell className="w-4 h-4 mx-1"/>Gyms
+               <CiDumbbell className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>Gyms
                 </div>
+            </div>
+          :
+            <></>
+        }
+        {
+          showBudget ?
+            <div onClick={()=>setShowBudget(false)}
+              className={`lg:border-l-8 border-l-6 xl:my-2 my-0.5 border-amber-400 bg-gray-100 hover:bg-gray-200 w-full lg:p-2 py-1 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex flex-col duration-200 mr-2 cursor-pointer`}>
+               
+               <div className="flex items-center">
+               <BiMoneyWithdraw className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>Budget
+                </div>
+                <div onClick={(e=>{e.stopPropagation()})}  
+                    className={`bodyText2`}>
+                    <div class="slidecontainer">
+                      <p>Monthly Rent:</p>
+                      <input onChange={(e)=>{
+                                    setBudgetMax(parseInt(e.target.value))
+                                    }} type="range" min="2500" max="7000" class="slider" id="myRange" />
+                      <div className="flex flex-col py-2 px-2 bg-gray-50 rounded-lg w-full mx-auto border-0.5 border-black">
+                        <p className="">Average Monthly Rent: </p><span className="font-semibold">${budgetMax}</span>
+                      </div>
+                    </div>
+                </div>
+
             </div>
           :
             <></>
@@ -610,8 +650,8 @@ const Home = () => {
         {
           showBikes ?
             <div onClick={()=>setShowBikes(false)}
-              className={`xl:border-l-8 border-l-4 my-0.5 border-gray-400 bg-gray-100 hover:bg-gray-200 w-full xl:py-2 lg:py-1 py-0.25 xl:px-4 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex items-center duration-200 mr-2 cursor-pointer`}>
-                <PiPersonSimpleBikeBold className="w-4 h-4 mx-1"/>BikeShare
+              className={`lg:border-l-8 border-l-6 my-0.5 border-gray-400 bg-gray-100 hover:bg-gray-200 w-full lg:p-2 py-1 lg:px-2 px-0.5 whitespace-nowrap  rounded-lg flex items-center duration-200 mr-2 cursor-pointer`}>
+                <PiPersonSimpleBikeBold className="xl:w-4 xl:h-4 w-2 h-2 mx-1"/>BikeShare
             </div>
           :
             <></>
