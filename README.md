@@ -1,7 +1,7 @@
 # Bayborhood
 A website designed for people to be find the perfect neighborhood in San Francisco.
 
-Deployed on: [https://keen-paletas-32a008.netlify.app](https://keen-paletas-32a008.netlify.app)
+Deployed on: [https://bayborhood.com](https://bayborhood.com)
 
 ## Table of Contents
 
